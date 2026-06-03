@@ -443,7 +443,18 @@ async function init() {
     setSyncStatus('ok');
     const q = query(collection(db,'movimientos'), orderBy('ts','desc'));
     onSnapshot(q, snap => {
-      movimientos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      movimientos = snap.docs.map(d => {
+        const data = { id: d.id, ...d.data() };
+        if (data.tipo === 'ingreso') {
+          if (data.moneda === 'USD') {
+            data.tipo = 'ingreso-usd';
+            if (data.montoOrig) data.monto = data.montoOrig;
+          } else {
+            data.tipo = 'ingreso-ars';
+          }
+        }
+        return data;
+      });
       setSyncStatus('ok');
       renderCajas();
       render();
